@@ -142,6 +142,7 @@ module.exports = function(grunt) {
     copy: {
       dist: {
         files: {
+          'vendor/dist/css/enterprise.css': 'styles/vendor/enterprise.css',
           'vendor/dist/css/main.css': 'styles/vendor/main.css',
           'vendor/dist/fonts/FontAwesome.otf': 'fonts/FontAwesome.otf',
           'vendor/dist/fonts/fontawesome-webfont.eot':

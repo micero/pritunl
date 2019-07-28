@@ -6,6 +6,7 @@ from pritunl import subscription
 from pritunl import settings
 from pritunl import auth
 
+from flask import abort, redirect, url_for
 import flask
 import re
 import httplib
@@ -28,17 +29,7 @@ def subscription_get():
 @app.app.route('/subscription/styles/<plan>/<ver>.css', methods=['GET'])
 @auth.session_light_auth
 def subscription_styles_get(plan, ver):
-    try:
-        styles = settings.local.sub_styles[plan]
-    except KeyError:
-        subscription.update()
-        styles = settings.local.sub_styles[plan]
-
-    return utils.styles_response(
-        styles['etag'],
-        styles['last_modified'],
-        styles['data'],
-    )
+    return redirect(url_for('static', filename='css/enterprise.css'))
 
 @app.app.route('/subscription', methods=['POST'])
 @auth.session_auth

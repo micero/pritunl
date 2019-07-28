@@ -17,81 +17,20 @@ def update():
     if not settings.app.id:
         settings.app.id = utils.random_name()
         settings.commit()
+        
+    settings.local.sub_active = True
+    settings.local.sub_status = "active"
+    settings.local.sub_plan = 'enterprise'
+    settings.local.sub_quantity = "None"
+    settings.local.sub_amount = "250"
+    settings.local.sub_period_end = None
+    settings.local.sub_trial_end = None
+    settings.local.sub_cancel_at_period_end = False
+    settings.local.sub_balance = "250"
+    settings.local.sub_url_key = None
 
-    if not license:
-        settings.local.sub_active = False
-        settings.local.sub_status = None
-        settings.local.sub_plan = None
-        settings.local.sub_quantity = None
-        settings.local.sub_amount = None
-        settings.local.sub_period_end = None
-        settings.local.sub_trial_end = None
-        settings.local.sub_cancel_at_period_end = None
-        settings.local.sub_balance = None
-        settings.local.sub_url_key = None
-    else:
-        for i in xrange(2):
-            try:
-                url = 'https://app.pritunl.com/subscription'
-                if settings.app.dedicated:
-                    url = settings.app.dedicated + '/subscription'
-
-                response = requests.get(
-                    url,
-                    json={
-                        'id': settings.app.id,
-                        'license': license,
-                        'version': settings.local.version_int,
-                    },
-                    timeout=max(settings.app.http_request_timeout, 10),
-                )
-
-                # License key invalid
-                if response.status_code == 470:
-                    raise ValueError('License key is invalid')
-
-                if response.status_code == 473:
-                    raise ValueError(('Version %r not recognized by ' +
-                        'subscription server') % settings.local.version_int)
-
-                data = response.json()
-
-                settings.local.sub_active = data['active']
-                settings.local.sub_status = data['status']
-                settings.local.sub_plan = data['plan']
-                settings.local.sub_quantity = data['quantity']
-                settings.local.sub_amount = data['amount']
-                settings.local.sub_period_end = data['period_end']
-                settings.local.sub_trial_end = data['trial_end']
-                settings.local.sub_cancel_at_period_end = data[
-                    'cancel_at_period_end']
-                settings.local.sub_balance = data.get('balance')
-                settings.local.sub_url_key = data.get('url_key')
-                settings.local.sub_styles[data['plan']] = data['styles']
-            except:
-                if i < 1:
-                    logger.exception('Failed to check subscription status',
-                        'subscription, retrying...')
-                    time.sleep(1)
-                    continue
-                logger.exception('Failed to check subscription status',
-                    'subscription')
-                settings.local.sub_active = False
-                settings.local.sub_status = None
-                settings.local.sub_plan = None
-                settings.local.sub_quantity = None
-                settings.local.sub_amount = None
-                settings.local.sub_period_end = None
-                settings.local.sub_trial_end = None
-                settings.local.sub_cancel_at_period_end = None
-                settings.local.sub_balance = None
-                settings.local.sub_url_key = None
-            break
-
-    if settings.app.license_plan != settings.local.sub_plan and \
-            settings.local.sub_plan:
-        settings.app.license_plan = settings.local.sub_plan
-        settings.commit()
+    settings.app.license_plan = settings.local.sub_plan
+    settings.commit()
 
     response = collection.update({
         '_id': 'subscription',
